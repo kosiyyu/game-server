@@ -1,6 +1,4 @@
 ﻿using System.Net.Sockets;
-using System.Text;
-using System.Threading.Tasks;
 
 
 namespace GameServer.Server
@@ -27,7 +25,8 @@ namespace GameServer.Server
             
             while (true)
             {
-                await _atomicUdpClient.ExecuteAsync(async client =>
+                await _atomicUdpClient.ExecuteAsync
+                (async client =>
                 {
                     UdpReceiveResult result = await client.ReceiveAsync();
                     var bytes = (await ProcessInput(result.Buffer)).ToBytes();
@@ -40,8 +39,18 @@ namespace GameServer.Server
         private static async Task<InputData> ProcessInput(byte[] data)
         {
             InputData inputData = InputData.FromBytes(data);
+            var command = CommandUtils.Deserialize(data);
+            
+            if (!CommandUtils.IsCommand(command))
+            {
+                // incorrect command
+            }
 
-            // todo
+            // To refactor
+            if (command.Name == "msg")
+            {
+                Console.WriteLine($"Received command value: {command.Value}");
+            }
 
             return inputData;
         }
