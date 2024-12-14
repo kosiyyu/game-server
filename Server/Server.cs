@@ -1,4 +1,6 @@
 ﻿using System.Net.Sockets;
+using GameServer.Server.Library;
+using ValueType = GameServer.Server.Library.ValueType;
 
 
 namespace GameServer.Server
@@ -29,30 +31,35 @@ namespace GameServer.Server
                 (async client =>
                 {
                     UdpReceiveResult result = await client.ReceiveAsync();
-                    var bytes = (await ProcessInput(result.Buffer)).ToBytes();
+                    var bytes = ProcessInput(result.Buffer);
                     await client.SendAsync(bytes, bytes.Length, result.RemoteEndPoint);
-                        
                 });
             }
         }
         
-        private static async Task<InputData> ProcessInput(byte[] data)
+        private static byte[] ProcessInput(byte[] data)
         {
-            InputData inputData = InputData.FromBytes(data);
             var command = CommandUtils.Deserialize(data);
             
-            if (!CommandUtils.IsCommand(command))
-            {
-                // incorrect command
-            }
+            // if (!CommandUtils.IsCommand(command))
+            // {
+            //     // incorrect command
+            //     Console.WriteLine($"Received unknown command: {command.Name}");
+            // }
 
             // To refactor
-            if (command.Name == "msg")
+            // if (command.Name == "msg")
+            // {
+            //     Console.WriteLine($"Received command value: {command.Value}");
+            // }
+            
+            if (command is { Name: "tel", ValueType: ValueType.Telemetry })
             {
-                Console.WriteLine($"Received command value: {command.Value}");
+                var telemetry = CommandUtils.GetTelemetry(command);
+                Console.WriteLine(telemetry);
             }
 
-            return inputData;
+            return [];
         }
     }
 }
